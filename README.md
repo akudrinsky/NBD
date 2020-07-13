@@ -1,9 +1,9 @@
 # NBD
  Little task for Acronis - write simple NBD server
  Task description on Russian:
-/divider
-Протокол: NBD Network Block Device - github - description
-/divider
+
+Протокол: NBD Network Block Device - github - description: https://github.com/NetworkBlockDevice/nbd/blob/master/doc/proto.md
+
 Написать реализацию сервера, отдает одно блочное устройство по нему - readonly export блочного устройства
 
 loopback, file system
