@@ -1,13 +1,16 @@
-package NBD
+// Package nbd is made for launching NBD protocol
+// TODO: write docs
+package nbd // TODO: test package
 
 import (
 	"bufio"
 	"fmt"
-	"net"
 	"io"
+	"net"
 )
 
-func Launch_server(socked_type Socket_type, port string) {
+// Launch_server TODO write docs
+func LaunchServer(socked_type Socket_type, port string) {
 	fmt.Println("Launching server...")
 	ln, err := net.Listen(string(socked_type), port)
 
@@ -27,7 +30,7 @@ func Launch_server(socked_type Socket_type, port string) {
 		fmt.Printf("Accepted connection from %v", conn.RemoteAddr())
 
 		if successfull_handshake(conn) {
-
+			transmission(conn)
 		}
 	}
 }
@@ -40,8 +43,8 @@ func successfull_handshake(conn net.Conn) bool {
 
 	// TODO: accept client flags (close connection and return false if does not recognize)
 	reader := bufio.NewReader(conn)
-	const buf_size uint = 4
-	buf := make([]byte, buf_size)
+	const bufSize uint = 4
+	buf := make([]byte, bufSize)
 
 	if _, err := io.ReadFull(reader, buf); err != nil {
 		fmt.Println("Error reading from connection: ", []byte(buf))
@@ -51,6 +54,28 @@ func successfull_handshake(conn net.Conn) bool {
 	return true
 }
 
-func read_bytes(where []byte, number uint) {
-	
+func transmission(conn net.Conn) {
+	var request NBDrequest
+	request.Read_request(conn)
+
+	toInt := func(array []byte) int { return int(array[1])<<1 + int(array[0]) }
+
+	switch toInt(request.Type) {
+	case NBD_CMD_READ:
+		// TODO: structured reply
+		simpleReply := NBD_simple_reply{
+			toArr(NBD_SIMPLE_REPLY_MAGIC),
+			[]byte{0}, /* TODO: errors */
+			request.Handle,
+			[]byte("Hello world!"), /* TODO: data to send */
+		}
+
+		simpleReply.Send(conn)
+
+	case NBD_CMD_DISC:
+		// Handle all outstanding requests!
+		conn.Close()
+		// Close TCP session (???)
+	}
+
 }

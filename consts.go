@@ -1,11 +1,14 @@
-package NBD
+package nbd
 
 /* List of constants that are needed for NBD protocol */
 
 // NBD magic numbers
 const (
-	NBDMAGIC = 0x4e42444d41474943
-	IHAVEOPT = 0x49484156454F5054
+	NBDMAGIC                   = 0x4e42444d41474943
+	IHAVEOPT                   = 0x49484156454F5054
+	REQUEST                    = 0x25609513
+	NBD_SIMPLE_REPLY_MAGIC     = 0x67446698
+	NBD_STRUCTURED_REPLY_MAGIC = 0x668e33ef
 )
 
 // Requests
@@ -32,3 +35,17 @@ const (
 	Tcp  Socket_type = "tcp"
 	Unix Socket_type = "unix"
 )
+
+func toArr(num int) []byte {
+	const bytesInInt = 4
+	const mask = 0b1111111
+	const bitsInByte = 8
+
+	answer := make([]byte, bytesInInt) // Maybe problem here (in C++ however)
+	for i := 0; i < 4; i++ {
+		answer[i] = byte(mask & num)
+		num >>= bitsInByte
+	}
+
+	return answer
+}

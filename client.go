@@ -1,4 +1,4 @@
-package NBD
+package nbd
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 
 const network = "192.168.0.44"
 
-func Launch_client(socked_type Socket_type, port string) {
+func LaunchClient(socked_type Socket_type, port string) {
 	var conn net.Conn
 	if socked_type == Tcp {
 		const adress = network + ":" + NBD_DEFAULT_PORT
@@ -24,8 +24,8 @@ func Launch_client(socked_type Socket_type, port string) {
 		return
 	}
 
-	const max_buf_size uint = 16
-	buf := make([]byte, max_buf_size)
+	const maxBufSize uint = 16
+	buf := make([]byte, maxBufSize)
 	reader := bufio.NewReader(conn)
 
 	if _, err := io.ReadFull(reader, buf); err != nil {
@@ -33,7 +33,7 @@ func Launch_client(socked_type Socket_type, port string) {
 		return
 	}
 
-	if string(buf) == string(NBDMAGIC) + string(IHAVEOPT) {
+	if string(buf) == string(NBDMAGIC)+string(IHAVEOPT) {
 
 	}
 }
