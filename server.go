@@ -13,13 +13,12 @@ import (
 func LaunchServer(sockedType Socket_type, port string) {
 	fmt.Println("Launching server...")
 	ln, err := net.Listen(string(sockedType), port)
+	defer ln.Close()
 
 	if err != nil {
 		fmt.Println("Error in listening port.")
-		ln.Close()
 		return
 	}
-	defer ln.Close()
 
 	for {
 		conn, err := ln.Accept()
