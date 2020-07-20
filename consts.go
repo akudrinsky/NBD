@@ -36,13 +36,27 @@ const (
 	Unix Socket_type = "unix"
 )
 
-func toArr(num int) []byte {
+func int32toArr(num int) []byte {
 	const bytesInInt = 4
 	const mask = 0b1111111
 	const bitsInByte = 8
 
 	answer := make([]byte, bytesInInt) // Maybe problem here (in C++ however)
-	for i := 0; i < 4; i++ {
+	for i := 0; i < bytesInInt; i++ {
+		answer[i] = byte(mask & num)
+		num >>= bitsInByte
+	}
+
+	return answer
+}
+
+func int64toArr(num int64) []byte {
+	const bytesInInt = 8
+	const mask = 0b1111111
+	const bitsInByte = 8
+
+	answer := make([]byte, bytesInInt) // Maybe problem here (in C++ however)
+	for i := 0; i < bytesInInt; i++ {
 		answer[i] = byte(mask & num)
 		num >>= bitsInByte
 	}

@@ -9,10 +9,10 @@ import (
 	"net"
 )
 
-// Launch_server TODO write docs
-func LaunchServer(socked_type Socket_type, port string) {
+// LaunchServer TODO write docs
+func LaunchServer(sockedType Socket_type, port string) {
 	fmt.Println("Launching server...")
-	ln, err := net.Listen(string(socked_type), port)
+	ln, err := net.Listen(string(sockedType), port)
 
 	if err != nil {
 		fmt.Println("Error in listening port.")
@@ -29,25 +29,34 @@ func LaunchServer(socked_type Socket_type, port string) {
 		}
 		fmt.Printf("Accepted connection from %v", conn.RemoteAddr())
 
-		if successfull_handshake(conn) {
+		if successfullHandshake(conn) {
 			transmission(conn)
 		}
 	}
 }
 
-func successfull_handshake(conn net.Conn) bool {
-	fmt.Fprintf(conn, string(NBDMAGIC)) // correct?
-	fmt.Fprintf(conn, string(IHAVEOPT))
+func successfullHandshake(conn net.Conn) bool {
+	conn.Write(int64toArr(NBDMAGIC))
+	conn.Write(int64toArr(IHAVEOPT))
 
-	// TODO: send handshake flags (?)
+	conn.Write([]byte{0b1, 0}) // 0b1 - zero-th bit is set to 1 because fixed newstyle
 
-	// TODO: accept client flags (close connection and return false if does not recognize)
 	reader := bufio.NewReader(conn)
 	const bufSize uint = 4
-	buf := make([]byte, bufSize)
+	clientOptions := make([]byte, bufSize)
 
-	if _, err := io.ReadFull(reader, buf); err != nil {
-		fmt.Println("Error reading from connection: ", []byte(buf))
+	if _, err := io.ReadFull(reader, clientOptions); err != nil {
+		fmt.Println("Error reading from connection: ", clientOptions)
+		conn.Close()
+		return false
+	}
+
+	if clientOptions[0] != 1 ||
+		clientOptions[1] != 0 ||
+		clientOptions[2] != 0 ||
+		clientOptions[3] != 0 {
+		fmt.Println("Disconnection due to unknown client options (need 100...00): ", clientOptions)
+		conn.Close()
 		return false
 	}
 
@@ -58,14 +67,16 @@ func transmission(conn net.Conn) {
 	var request NBDrequest
 	request.Read_request(conn)
 
-	toInt := func(array []byte) int { return int(array[1])<<1 + int(array[0]) }
+	toInt := func(array []byte) int {
+		return int(array[1])<<1 + int(array[0])
+	}
 
 	switch toInt(request.Type) {
 	case NBD_CMD_READ:
 		// TODO: structured reply
 		simpleReply := NBD_simple_reply{
-			toArr(NBD_SIMPLE_REPLY_MAGIC),
-			[]byte{0}, /* TODO: errors */
+			int32toArr(NBD_SIMPLE_REPLY_MAGIC),
+			[]byte{0, 0, 0, 0}, /* TODO: errors */
 			request.Handle,
 			[]byte("Hello world!"), /* TODO: data to send */
 		}
